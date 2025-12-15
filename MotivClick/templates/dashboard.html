@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - motiveclick{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">
+                Welcome back, {{ user.display_name if user and user.display_name else 'there' }}! 👋
+            </h1>
+            <p class="mt-1 text-sm text-gray-600">
+                Here's your progress overview for today
+            </p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <a href="{{ url_for('goals') }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition">
+                <i class="fas fa-plus mr-2"></i>
+                New Goal
+            </a>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-bullseye text-3xl text-indigo-600"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Active Goals</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ stats.active_goals if stats else 0 }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-tasks text-3xl text-green-600"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Active Habits</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ stats.active_habits if stats else 0 }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-3xl text-blue-600"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Today's Progress</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ stats.today_completed if stats else 0 }}/{{ stats.today_total if stats else 0 }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-chart-line text-3xl text-purple-600"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">30-Day Rate</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ stats.completion_rate_30d if stats else 0 }}%</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Motivation Section -->
+    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="flex items-start justify-between">
+            <div class="flex-1">
+                <h2 class="text-2xl font-bold mb-2">
+                    <i class="fas fa-robot mr-2"></i>Daily AI Motivation
+                </h2>
+                
+                {% if ai_suggestion %}
+                <div id="ai-content" class="space-y-4">
+                    <p class="text-indigo-100">{{ ai_suggestion.summary_of_progress }}</p>
+                    
+                    <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                        <h3 class="font-semibold mb-2">💡 Your personalized tips:</h3>
+                        <div id="ai-suggestions" class="space-y-2 text-sm"></div>
+                    </div>
+                    
+                    <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                        <p id="ai-motivation" class="italic"></p>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-indigo-100 mb-4">Get personalized motivation and tips powered by Google Gemini AI based on your goals and progress.</p>
+                <button id="generate-ai-btn" 
+                        class="bg-white text-indigo-600 hover:bg-indigo-50 font-semibold py-2 px-6 rounded-lg transition">
+                    <i class="fas fa-sparkles mr-2"></i>Generate Today's Motivation
+                </button>
+                <div id="ai-loading" class="hidden mt-4">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>Generating your personalized motivation...
+                </div>
+                <div id="ai-content" class="hidden mt-4 space-y-4"></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Today's Habits -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-calendar-check mr-2 text-indigo-600"></i>Today's Habits
+            </h2>
+        </div>
+        <div class="p-6">
+            {% if habits %}
+            <div class="space-y-3">
+                {% for habit in habits %}
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    <div class="flex items-center flex-1">
+                        <input type="checkbox" 
+                               class="habit-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer"
+                               data-habit-id="{{ habit.id }}"
+                               {% if habit.today_status == 'completed' %}checked{% endif %}>
+                        <label class="ml-3 flex-1 cursor-pointer">
+                            <span class="text-gray-900 font-medium">{{ habit.name }}</span>
+                            <span class="ml-2 text-xs text-gray-500">({{ habit.frequency }})</span>
+                        </label>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="text-right">
+                            <div class="flex items-center text-orange-600">
+                                <i class="fas fa-fire mr-1"></i>
+                                <span class="font-semibold habit-streak" data-habit-id="{{ habit.id }}">{{ habit.streak }}</span>
+                                <span class="text-xs ml-1">day streak</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 mb-4">No habits yet! Create a goal and add habits to get started.</p>
+                <a href="{{ url_for('goals') }}" class="text-indigo-600 hover:text-indigo-500 font-medium">
+                    <i class="fas fa-plus mr-1"></i>Create your first goal
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-history mr-2 text-indigo-600"></i>Last 7 Days
+            </h2>
+        </div>
+        <div class="p-6">
+            {% if recent_activity %}
+            <div class="space-y-2">
+                {% for day in recent_activity|reverse %}
+                <div class="flex items-center justify-between p-3 rounded-lg {% if day.rate >= 80 %}bg-green-50{% elif day.rate >= 50 %}bg-yellow-50{% else %}bg-red-50{% endif %}">
+                    <div>
+                        <span class="font-medium text-gray-900">{{ day.day_name }}</span>
+                        <span class="text-sm text-gray-600 ml-2">{{ day.date|format_date }}</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600">{{ day.completed }}/{{ day.total }}</span>
+                        <span class="font-semibold {% if day.rate >= 80 %}text-green-600{% elif day.rate >= 50 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                            {{ day.rate }}%
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No activity data yet. Start logging your habits!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Load AI suggestions if they exist
+{% if ai_suggestion %}
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        const data = {{ ai_suggestion.suggestions|tojson }};
+        const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+        
+        if (parsed.suggestions) {
+            const suggestionsDiv = document.getElementById('ai-suggestions');
+            parsed.suggestions.forEach((suggestion, index) => {
+                const p = document.createElement('p');
+                p.textContent = `${index + 1}. ${suggestion}`;
+                suggestionsDiv.appendChild(p);
+            });
+        }
+        
+        if (parsed.motivation) {
+            document.getElementById('ai-motivation').textContent = parsed.motivation;
+        }
+    } catch (e) {
+        console.error('Error parsing AI suggestions:', e);
+    }
+});
+{% endif %}
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/ai_motivation.js') }}"></script>
+{% endblock %}

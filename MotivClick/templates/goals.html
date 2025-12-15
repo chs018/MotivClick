@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Goals - motivClick{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">
+                <i class="fas fa-bullseye mr-2 text-indigo-600"></i>My Goals
+            </h1>
+            <p class="mt-1 text-sm text-gray-600">
+                Manage your goals and associated habits
+            </p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <a href="{{ url_for('new_goal') }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition">
+                <i class="fas fa-plus mr-2"></i>
+                Create New Goal
+            </a>
+        </div>
+    </div>
+    
+    <!-- Goals List -->
+    {% if goals %}
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {% for goal in goals %}
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition">
+            <div class="p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                            {{ goal.title }}
+                        </h3>
+                        {% if goal.description %}
+                        <p class="text-gray-600 text-sm mb-3">{{ goal.description }}</p>
+                        {% endif %}
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
+                                <i class="fas fa-calendar mr-1"></i>
+                                {{ goal.target_type|title }}
+                            </span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-800">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                Started {{ goal.start_date|format_date }}
+                            </span>
+                            {% if goal.target_date %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800">
+                                <i class="fas fa-flag-checkered mr-1"></i>
+                                Target {{ goal.target_date|format_date }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Habits for this goal -->
+                {% if goal.habits %}
+                <div class="mb-4">
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-tasks mr-1"></i>Habits ({{ goal.habits|length }})
+                    </h4>
+                    <div class="space-y-1">
+                        {% for habit in goal.habits %}
+                        <div class="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            <span class="flex-1">{{ habit.name }}</span>
+                            <span class="text-xs text-gray-500">({{ habit.frequency }})</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Actions -->
+                <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
+                    <a href="{{ url_for('manage_habits', goal_id=goal.id) }}" 
+                       class="flex-1 text-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                        <i class="fas fa-tasks mr-1"></i>Manage Habits
+                    </a>
+                    <a href="{{ url_for('edit_goal', goal_id=goal.id) }}" 
+                       class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <form method="POST" action="{{ url_for('archive_goal', goal_id=goal.id) }}" class="inline" 
+                          onsubmit="return confirm('Archive this goal?');">
+                        <button type="submit" 
+                                class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-archive"></i>
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('delete_goal', goal_id=goal.id) }}" class="inline"
+                          onsubmit="return confirm('Permanently delete this goal and all its habits?');">
+                        <button type="submit" 
+                                class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white shadow rounded-lg p-12">
+        <div class="text-center">
+            <i class="fas fa-bullseye text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">No goals yet</h3>
+            <p class="text-gray-500 mb-6">Create your first goal to start tracking your progress!</p>
+            <a href="{{ url_for('new_goal') }}" 
+               class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition">
+                <i class="fas fa-plus mr-2"></i>
+                Create Your First Goal
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

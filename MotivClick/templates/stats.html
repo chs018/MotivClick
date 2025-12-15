@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics - motivClick{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-chart-bar mr-2 text-indigo-600"></i>Statistics & Insights
+        </h1>
+        <p class="mt-1 text-sm text-gray-600">
+            Track your progress and analyze your performance
+        </p>
+    </div>
+    
+    <!-- Overview Stats -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-bullseye text-3xl text-indigo-600"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Active Goals</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ overview.active_goals if overview else 0 }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-tasks text-3xl text-green-600"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Active Habits</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ overview.active_habits if overview else 0 }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-percentage text-3xl text-purple-600"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">30-Day Rate</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ overview.completion_rate_30d if overview else 0 }}%</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clipboard-check text-3xl text-blue-600"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Total Logs</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ overview.total_logs_30d if overview else 0 }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Weekly Stats -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-calendar-week mr-2 text-indigo-600"></i>Weekly Completion Rates
+            </h2>
+        </div>
+        <div class="p-6">
+            {% if weekly_stats %}
+            <div class="space-y-4">
+                {% for week in weekly_stats|reverse %}
+                <div class="border-l-4 {% if week.rate >= 80 %}border-green-500{% elif week.rate >= 50 %}border-yellow-500{% else %}border-red-500{% endif %} pl-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <h3 class="font-medium text-gray-900">
+                                Week of {{ week.week_start|format_date }}
+                            </h3>
+                            <p class="text-sm text-gray-600">
+                                {{ week.completed }} of {{ week.total }} tasks completed
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-2xl font-bold {% if week.rate >= 80 %}text-green-600{% elif week.rate >= 50 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                                {{ week.rate }}%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="{% if week.rate >= 80 %}bg-green-500{% elif week.rate >= 50 %}bg-yellow-500{% else %}bg-red-500{% endif %} h-2.5 rounded-full" 
+                             style="width: {{ week.rate }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No weekly data available yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Monthly Stats -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-calendar-alt mr-2 text-indigo-600"></i>Monthly Completion Rates
+            </h2>
+        </div>
+        <div class="p-6">
+            {% if monthly_stats %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% for month in monthly_stats|reverse %}
+                <div class="bg-gradient-to-br {% if month.rate >= 80 %}from-green-50 to-green-100{% elif month.rate >= 50 %}from-yellow-50 to-yellow-100{% else %}from-red-50 to-red-100{% endif %} rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                        {{ month.month_name }} {{ month.year }}
+                    </h3>
+                    <div class="text-4xl font-bold {% if month.rate >= 80 %}text-green-600{% elif month.rate >= 50 %}text-yellow-600{% else %}text-red-600{% endif %} mb-2">
+                        {{ month.rate }}%
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        {{ month.completed }}/{{ month.total }} completed
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No monthly data available yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Habit Statistics -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-fire mr-2 text-orange-600"></i>Habit Streaks & Performance
+            </h2>
+        </div>
+        <div class="p-6">
+            {% if habits_stats %}
+            <div class="space-y-6">
+                {% for item in habits_stats %}
+                <div class="border border-gray-200 rounded-lg p-5 hover:shadow-md transition">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">{{ item.habit.name }}</h3>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-calendar mr-1"></i>{{ item.habit.frequency|title }}
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <div class="flex items-center text-orange-600 text-xl font-bold">
+                                <i class="fas fa-fire mr-2"></i>
+                                <span>{{ item.stats.current_streak }}</span>
+                            </div>
+                            <p class="text-xs text-gray-500">Current Streak</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-3">
+                        <div>
+                            <p class="text-sm text-gray-600">Total Logs</p>
+                            <p class="text-xl font-semibold text-gray-900">{{ item.stats.total_logs }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Completed</p>
+                            <p class="text-xl font-semibold text-green-600">{{ item.stats.completed }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Success Rate</p>
+                            <p class="text-xl font-semibold text-indigo-600">{{ item.stats.completion_rate }}%</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Best Streak</p>
+                            <p class="text-xl font-semibold text-orange-600">{{ item.stats.longest_streak }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-indigo-600 h-2 rounded-full" 
+                             style="width: {{ item.stats.completion_rate }}%"></div>
+                    </div>
+                    
+                    {% if item.stats.last_completed %}
+                    <p class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-check mr-1"></i>Last completed: {{ item.stats.last_completed|format_date }}
+                    </p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-chart-line text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 mb-2">No habit statistics available yet.</p>
+                <p class="text-sm text-gray-400">Start tracking your habits to see detailed analytics!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

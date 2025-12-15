@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}{% if goal %}Edit{% else %}New{% endif %} Goal - motivClick{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white shadow rounded-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas {% if goal %}fa-edit{% else %}fa-plus{% endif %} mr-2 text-indigo-600"></i>
+            {% if goal %}Edit Goal{% else %}Create New Goal{% endif %}
+        </h1>
+        
+        <form method="POST" class="space-y-6">
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">
+                    Goal Title <span class="text-red-500">*</span>
+                </label>
+                <input type="text" 
+                       id="title" 
+                       name="title" 
+                       required
+                       value="{{ goal.title if goal else '' }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                       placeholder="e.g., Learn Python, Get Fit, Write a Book">
+            </div>
+            
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                </label>
+                <textarea id="description" 
+                          name="description" 
+                          rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          placeholder="Describe your goal and why it matters to you...">{{ goal.description if goal else '' }}</textarea>
+            </div>
+            
+            <div>
+                <label for="target_type" class="block text-sm font-medium text-gray-700 mb-1">
+                    Target Type
+                </label>
+                <select id="target_type" 
+                        name="target_type"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <option value="daily" {% if goal and goal.target_type == 'daily' %}selected{% endif %}>Daily</option>
+                    <option value="weekly" {% if goal and goal.target_type == 'weekly' %}selected{% endif %}>Weekly</option>
+                    <option value="once" {% if goal and goal.target_type == 'once' %}selected{% endif %}>One-time Goal</option>
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">
+                        Start Date
+                    </label>
+                    <input type="date" 
+                           id="start_date" 
+                           name="start_date"
+                           value="{{ goal.start_date if goal else '' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label for="target_date" class="block text-sm font-medium text-gray-700 mb-1">
+                        Target Date (optional)
+                    </label>
+                    <input type="date" 
+                           id="target_date" 
+                           name="target_date"
+                           value="{{ goal.target_date if goal and goal.target_date else '' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <a href="{{ url_for('goals') }}" 
+                   class="text-gray-600 hover:text-gray-800 font-medium">
+                    <i class="fas fa-arrow-left mr-1"></i>Back to Goals
+                </a>
+                <button type="submit" 
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition">
+                    <i class="fas {% if goal %}fa-save{% else %}fa-plus{% endif %} mr-2"></i>
+                    {% if goal %}Update Goal{% else %}Create Goal{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
